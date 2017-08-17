@@ -4,4 +4,6 @@
 /.idea
 /.Python
 /pip-selfcheck.json
-/.DS_Store
+.DS_Store
+/Scripts
+/tcl
