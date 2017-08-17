@@ -1,6 +1,6 @@
 # Web Application that will handle websocket, with write received by Main.py calls, and values pushed to all web clients
 
-ffrom aiohttp import web
+from aiohttp import web
 import socketio
 
 sio = socketio.AsyncServer()
