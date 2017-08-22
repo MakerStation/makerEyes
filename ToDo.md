@@ -39,7 +39,8 @@ Payload "event"
 # Sensors
 
 L shaped, with two size (l1, l2) and a third sensor in the "origin"
-
+temperature: 1/10 centigrades
+%RH: unit
 
 # Homeworks
 - trigonometry
