@@ -12,16 +12,18 @@ async def index(request):
     with open('../client/index.html') as f:
         return web.Response(text=f.read(), content_type='text/html')
 
+# -------------------------------------------------------------------
+
 @sio.on('connect', namespace='/chat')
 def connect(sid, environ):
     """On connection event from client print to stdout the connect event and sid of client."""
     print("connect ", sid)
 
-@sio.on('talk_to_mirror', namespace='/chat')
+@sio.on('broadcast', namespace='/chat')
 async def message(sid, data):
     """Get message from client and reply with same message to it."""
-    print("message: ", data)
-    await sio.emit('reply', data=data['data'], skip_sid=True, namespace='/chat')
+    print("broadcast", data['data'], sid)
+    await sio.emit('broadcast', data=data['data'], skip_sid=True, namespace='/chat')
 
 @sio.on('disconnect request', namespace='/chat')
 async def disconnect(sid):
@@ -29,10 +31,10 @@ async def disconnect(sid):
     print('disconnect ', sid)
     await sio.disconnect(sid, namespace='/chat')
 
-@sio.on('msg_to_server', namespace='/chat')
+@sio.on('command', namespace='/chat')
 def my_event(sid, data):
     """Get message from client and print to stdout."""
-    print(data, sid)
+    print("command", sid, data)
 
 
 app.router.add_get('/', index)

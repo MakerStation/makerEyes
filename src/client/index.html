@@ -15,7 +15,7 @@
             socket.on('disconnect', function() {
                 $('#log').append('<br>Disconnected');
             });
-            socket.on('reply', function(msg) {
+            socket.on('broadcast', function(msg) {
                 $('#log').append('<br>Received: ' + msg);
             });
 
@@ -28,7 +28,7 @@
                 return false;
             });
             $('form#send_room').submit(function(event) {
-                socket.emit('talk_to_mirror', {room: $('#room_name').val(), data: $('#room_data').val()});
+                socket.emit('broadcast', {room: $('#room_name').val(), data: $('#room_data').val()});
                 return false;
             });
             $('form#disconnect').submit(function(event) {
@@ -45,11 +45,11 @@ If you see this pages the server is <b>running!</b><br><br>
     <h2>Send:</h2>
     <form id="emit" method="POST" action='#'>
         <input type="text" name="emit_data" id="emit_data" placeholder="Message">
-        <input type="submit" value="Send Message to Server">
+        <input type="submit" value="Send Command">
     </form>
     <form id="send_room" method="POST" action='#'>
         <input type="text" name="room_data" id="room_data" placeholder="Message">
-        <input type="submit" value="Talk to Mirror">
+        <input type="submit" value="Broadcast">
     </form>
     <form id="disconnect" method="POST" action="#">
         <input type="submit" value="Disconnect">

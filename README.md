@@ -14,6 +14,8 @@ Basic steps to install 'virtualenv'
     > deactivate
 
 
+    > pip freeze > requirements.txt
+
 ### Current Python Version
 
 $ python --version
