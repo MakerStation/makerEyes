@@ -17,5 +17,12 @@ if __name__ == '__main__':
         message = ''.join(random.choices(string.ascii_uppercase + string.digits, k=15))
         print("write value to websocket: " + message)
         chat.emit("broadcast", {"data": message })
+#         chat.emit("broadcast", {
+#             'object': "A",
+#             'timestamp': "2016-06-10T21:42:24.760738",
+#             'x': 25233,
+#             'y': 5232,
+#             'z': 25233
+#         })
         socketIO.wait(seconds=1)
 
