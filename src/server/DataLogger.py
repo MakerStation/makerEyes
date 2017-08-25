@@ -8,13 +8,20 @@ from socketIO_client import SocketIO, LoggingNamespace
 
 #def distance ():
 
-def coordinate (l1, l2, d1, d2, d3):
-    xc = (math.pow(l1, 2) + d1 - d3) / (2 * l1)
-    zc = (math.pow(l2, 2) + d1 - d2) / (2 * l2)
-    yc = math.sqrt(d1 - math.pow(zc, 2) - math.pow(xc, 2))
+def coordinate (l, d):
+    # l --> tuple with the distances between the sensors
+    # d --> tuple with the distance of the object from the three sensors
+    xc = (math.pow(l[0], 2) + d[0] - d[2]) / (2 * l[0])
+    zc = (math.pow(l[1], 2) + d[0] - d[1]) / (2 * l[1])
+    yc = math.sqrt(d[0] - math.pow(zc, 2) - math.pow(xc, 2))
     coordinates = (xc, yc, zc)
     return coordinates;
 
+    # l1 = #distance of the first sensor from the middle one
+    # l2 = #distance of the second sensor form the middle one
+    # d1 = #distance of the object from the middle sensor ^ 2
+    # d2 = #distance of the object from the second sensor (l2) ^ 2
+    # d3 = #distance of the object from the first sensor (l1 ) ^ 2
 
 if __name__ == '__main__':
     logging.getLogger('socketIO-client').setLevel(logging.DEBUG)
@@ -22,13 +29,6 @@ if __name__ == '__main__':
 
     socketIO = SocketIO('localhost', 8085)
     chat = socketIO.define(LoggingNamespace, '/chat')
-
-    #l1 = #distance of the first sensor from the middle one
-    #l2 = #distance of the second sensor form the middle one
-    #d1 = #distance of the object from the middle sensor ^ 2
-    #d2 = #distance of the object from the second sensor (l2) ^ 2
-    #d3 = #distance of the object from the first sensor (l1 ) ^ 2
-
 
     while True:
         print("read value from serial")
