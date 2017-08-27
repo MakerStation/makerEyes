@@ -16,8 +16,7 @@ def sound_speed (temp, p ,rh):
 
     t_kel = 273.15 + temp; # Measure ambient temp (in Kelvin)
 
-    # Molecular concentration of water vapour calculated from Rh
-    # using Giacomos method by Davis(1991) as implemented in DTU report 11b - 1997
+    # Molecular concentration of water vapour calculated from Rh using Giacomos method by Davis(1991) as implemented in DTU report 11b - 1997
     ENH = math.pi * math.pow(10,-8)* p + 1.00062 + math.pow(temp, 2) * 5.6 * math.pow(10, -7);
 
     # These commented lines correspond to values used in Cramer (Appendix)
@@ -34,8 +33,7 @@ def sound_speed (temp, p ,rh):
     # Xc = 314.0*Math.pow(10,-6)
     Xc = 400.0 * math.pow(10, -6)
 
-    # Speed calculated using the method
-    # of Cramer from JASA vol 93 p. 2510
+    # Speed calculated using the method of Cramer from JASA vol 93 p. 2510
     C1 = 0.603055 * temp + 331.5024 - math.pow(temp, 2) * 5.28 * math.pow(10, -4) + (0.1495874 * temp + 51.471935 - math.pow(temp, 2) * 7.82 * math.pow(10, -4)) * Xw
     C2 = (-1.82 * math.pow(10, -7) + 3.73 * math.pow(10, -8) * temp - math.pow(temp, 2) * 2.93 * math.pow(10, -10)) * p + (-85.20931 - 0.228525 * temp + math.pow(temp, 2) * 5.91 * math.pow(10, -5)) * Xc
     C3 = math.pow(Xw, 2) * 2.835149 - math.pow(p, 2) * 2.15 * math.pow(10, -13) + math.pow(Xc, 2) * 29.179762 + 4.86 * math.pow(10, -4) * Xw * p * Xc
@@ -61,11 +59,11 @@ def coordinate (l, d):
     coordinates = (xc, yc, zc)
     return coordinates;
 
-    # l1 = #distance of the first sensor from the middle one
-    # l2 = #distance of the second sensor form the middle one
-    # d1 = #distance of the object from the middle sensor ^ 2
-    # d2 = #distance of the object from the second sensor (l2) ^ 2
-    # d3 = #distance of the object from the first sensor (l1 ) ^ 2
+    # l[0] = distance of the first sensor from the middle one
+    # l[1] = distance of the second sensor form the middle one
+    # d[0] = distance of the object from the middle sensor ^ 2
+    # d[1] = distance of the object from the second sensor (l2) ^ 2
+    # d[2] = distance of the object from the first sensor (l1 ) ^ 2
 
 if __name__ == '__main__':
     logging.getLogger('socketIO-client').setLevel(logging.DEBUG)
