@@ -53,14 +53,14 @@ def coordinate (l, d):
     xc = (math.pow(l[0], 2) + math.pow(d[0], 2) - math.pow(d[2], 2)) / (2 * l[0])
     zc = (math.pow(l[1], 2) + math.pow(d[0], 2) - math.pow(d[1], 2)) / (2 * l[1])
     yc = math.sqrt(math.pow(d[0], 2) - math.pow(zc, 2) - math.pow(xc, 2))
-    coordinates = (xc, yc, zc)
+    coordinates = (round(xc, 3), round(yc, 3), round(zc, 3))
     return coordinates;
 
     # l[0] = distance of the first sensor from the middle one
     # l[1] = distance of the second sensor form the middle one
-    # d[0] = distance of the object from the middle sensor ^ 2
-    # d[1] = distance of the object from the second sensor (l2) ^ 2
-    # d[2] = distance of the object from the first sensor (l1 ) ^ 2
+    # d[0] = distance of the object from the middle sensor
+    # d[1] = distance of the object from the second sensor (l2)
+    # d[2] = distance of the object from the first sensor (l1)
 
 if __name__ == '__main__':
     logging.getLogger('socketIO-client').setLevel(logging.DEBUG)
