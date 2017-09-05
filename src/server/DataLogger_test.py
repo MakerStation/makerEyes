@@ -14,6 +14,7 @@ class TestDataLogger(unittest.TestCase):
         VI = coordinate((1, 1), (43, 50, 38))
         self.assertEqual(VI, (3, 5, -3))
 
+
     def test_soundspeed(self):
         cI = sound_speed(20, 101000, 50)
         self.assertEqual(cI, 343.99)
