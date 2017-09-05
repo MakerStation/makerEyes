@@ -1,8 +1,8 @@
 # Application that will read data from serial port and push values to Socket.py's websocket
-import random
-import string
 import logging
 import math
+import datetime
+import random
 
 from socketIO_client import SocketIO, LoggingNamespace
 
@@ -41,7 +41,7 @@ def sound_speed (temp, p ,rh):
 
     ####################################################################################################################
 
-    return (c); # (m/s)
+    return (c / 10e6); # (m/µs)
 
 def distance (t, c):
 
@@ -70,19 +70,47 @@ if __name__ == '__main__':
     logging.basicConfig()
 
     socketIO = SocketIO('localhost', 8085)
-    chat = socketIO.define(LoggingNamespace, '/chat')
+    chat = socketIO.define(LoggingNamespace, '/dataLogger')
+
+    min_dist_time = 15000  # expressed in µs
+    max_dist_time = 25000  # expressed in µs
+
+    temperature = 20;
+    pressure = 101000;
+    relativeHumidity = 50;
+
+    sensor = (0.4, 0.4)
+    soundSpeed = sound_speed(temperature, pressure, relativeHumidity)
+    print(soundSpeed)
+    startTime = datetime.datetime.now();
 
     while True:
-        print("read value from serial")
-        message = ''.join(random.choices(string.ascii_uppercase + string.digits, k=15))
-        print("write value to websocket: " + message)
-        chat.emit("broadcast", {"data": message })
-#         chat.emit("broadcast", {
-#             'object': "A",
-#             'timestamp': "2016-06-10T21:42:24.760738",
-#             'x': 25233,
-#             'y': 5232,
-#             'z': 25233
-#         })
+        controllerMessage = (
+            "A",
+            datetime.datetime.now() - startTime,
+            random.randint(min_dist_time, max_dist_time),
+            random.randint(min_dist_time, max_dist_time),
+            random.randint(min_dist_time, max_dist_time)
+        )
+
+        objectID = controllerMessage[0]
+        deltaTime = controllerMessage[1]
+        deltaTimes = (
+            controllerMessage[2],
+            controllerMessage[3],
+            controllerMessage[4]
+        )
+
+        print("deltaTimes", deltaTimes)
+        print("deltaDistances", distance(deltaTimes, soundSpeed))
+        (x, y, z) = coordinate(sensor, distance(deltaTimes, soundSpeed))
+        print("position", (x, y, z))
+        chat.emit("broadcast", {
+            'object': objectID,
+            'timestamp': str(startTime + deltaTime),
+            'x': x,
+            'y': y,
+            'z': z
+        })
         socketIO.wait(seconds=1)
 
