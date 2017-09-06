@@ -22,7 +22,7 @@ def connect(sid, environ):
 @sio.on('broadcast', namespace='/dataLogger')
 async def message(sid, data):
     """Get message from client and reply with same message to it."""
-    print("broadcast", data, sid)
+#   print("broadcast", data, sid)
     await sio.emit('broadcast', data=data, skip_sid=True, namespace='/dataLogger')
 
 @sio.on('disconnect request', namespace='/dataLogger')

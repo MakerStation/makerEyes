@@ -3,6 +3,7 @@ import logging
 import math
 import datetime
 import random
+import itertools
 
 from socketIO_client import SocketIO, LoggingNamespace
 
@@ -66,7 +67,7 @@ def coordinate (l, d):
     # d[2] = distance of the object from the first sensor (l1 ) ^ 2
 
 if __name__ == '__main__':
-    logging.getLogger('socketIO-client').setLevel(logging.DEBUG)
+    logging.getLogger('socketIO-client').setLevel(logging.WARN)
     logging.basicConfig()
 
     socketIO = SocketIO('localhost', 8085)
@@ -84,9 +85,12 @@ if __name__ == '__main__':
     print(soundSpeed)
     startTime = datetime.datetime.now();
 
-    while True:
+    controllerObjectID = "A"
+
+    objects = ["A", "B", "C"]
+    for currentObject in itertools.cycle(objects):
         controllerMessage = (
-            "A",
+            currentObject,
             datetime.datetime.now() - startTime,
             random.randint(min_dist_time, max_dist_time),
             random.randint(min_dist_time, max_dist_time),
@@ -101,10 +105,10 @@ if __name__ == '__main__':
             controllerMessage[4]
         )
 
-        print("deltaTimes", deltaTimes)
-        print("deltaDistances", distance(deltaTimes, soundSpeed))
+#       print("deltaTimes", deltaTimes)
+#       print("deltaDistances", distance(deltaTimes, soundSpeed))
         (x, y, z) = coordinate(sensor, distance(deltaTimes, soundSpeed))
-        print("position", (x, y, z))
+#       print("position", (x, y, z))
         chat.emit("broadcast", {
             'object': objectID,
             'timestamp': str(startTime + deltaTime),
