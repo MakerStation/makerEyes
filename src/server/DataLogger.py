@@ -4,8 +4,11 @@ import math
 import datetime
 import random
 import itertools
+import time
 
 from socketIO_client import SocketIO, LoggingNamespace
+
+# ================================================================
 
 def sound_speed (temp, p ,rh):
 
@@ -63,55 +66,130 @@ def coordinate (l, d):
     # d[1] = distance of the object from the second sensor (l2)
     # d[2] = distance of the object from the first sensor (l1)
 
+# ================================================================
+
+def aDistances (t):
+    speed = 1
+    angle = t * speed
+    x = 0 + 0.3 * math.sin(angle / 180 * math.pi)
+    y = 1.3 - 0.3 * math.cos(angle / 180 * math.pi)
+    z = 0
+    dist0 = math.sqrt(math.pow((0 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
+    dist1 = math.sqrt(math.pow((0.4 - x), 2) +math.pow((0 - y), 2) + math.pow((0 - z), 2) )
+    dist2 = math.sqrt(math.pow((0 - x), 2)  + math.pow((0.4 - y), 2) + math.pow((0 - z), 2) )
+    return (dist0, dist1, dist2);
+
+def bDistances (t):
+    speed = 1
+    angle = t * speed
+    x = 0 + 0.3 * math.cos(angle / 180 * math.pi)
+    y = 1.3
+    z = 0 + 0.3 * math.sin(angle / 180 * math.pi)
+    dist0 = math.sqrt(math.pow((0 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
+    dist1 = math.sqrt(math.pow((0.4 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
+    dist2 = math.sqrt(math.pow((0 - x), 2) + math.pow((0.4 - y), 2) + math.pow((0 - z), 2))
+    return (dist0, dist1, dist2);
+
+def cDistances (t):
+    speed = 1
+    angle = t * speed
+    x = 0
+    y = 1.3 - 0.3 * math.cos(angle / 180 * math.pi)
+    z = 0 + 0.3 * math.sin(angle / 180 * math.pi)
+    dist0 = math.sqrt(math.pow((0 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
+    dist1 = math.sqrt(math.pow((0.4 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
+    dist2 = math.sqrt(math.pow((0 - x), 2) + math.pow((0.4 - y), 2) + math.pow((0 - z), 2))
+    return (dist0, dist1, dist2);
+
+
+def aPosition (t, soundSpeed):
+    d = aDistances(t)
+    return (d[0]/soundSpeed, d[1]/soundSpeed, d[2]/soundSpeed);
+
+def bPosition (t, soundSpeed):
+    d = bDistances(t)
+    return (d[0] / soundSpeed, d[1] / soundSpeed, d[2] / soundSpeed);
+
+def cPosition (t, soundSpeed):
+    d = cDistances(t)
+    return (d[0] / soundSpeed, d[1] / soundSpeed, d[2] / soundSpeed);
+
 if __name__ == '__main__':
     logging.getLogger('socketIO-client').setLevel(logging.WARN)
     logging.basicConfig()
-
+    #
     socketIO = SocketIO('localhost', 8085)
     chat = socketIO.define(LoggingNamespace, '/dataLogger')
+    #
+    # min_dist_time = 15000  # expressed in µs
+    # max_dist_time = 25000  # expressed in µs
+    #
 
-    min_dist_time = 15000  # expressed in µs
-    max_dist_time = 25000  # expressed in µs
+    #
+    # sensor = (0.4, 0.4)
+    # print(soundSpeed)
+    # startTime = datetime.datetime.now();
+
+#     objects = ["A", "B", "C"]
+#     for currentObject in itertools.cycle(objects):
+#         controllerMessage = (
+#             currentObject,
+#             datetime.datetime.now() - startTime,
+#             random.randint(min_dist_time, max_dist_time),
+#             random.randint(min_dist_time, max_dist_time),
+#             random.randint(min_dist_time, max_dist_time)
+#         )
+#
+#         objectID = controllerMessage[0]
+#         deltaTime = controllerMessage[1]
+#         deltaTimes = (
+#             controllerMessage[2],
+#             controllerMessage[3],
+#             controllerMessage[4]
+#         )
+#
+# #       print("deltaTimes", deltaTimes)
+# #       print("deltaDistances", distance(deltaTimes, soundSpeed))
+#         (x, y, z) = coordinate(sensor, distance(deltaTimes, soundSpeed))
+# #       print("position", (x, y, z))
+#         chat.emit("broadcast", {
+#             'object': objectID,
+#             'timestamp': str(startTime + deltaTime),
+#             'x': x,
+#             'y': y,
+#             'z': z
+#         })
+#         socketIO.wait(seconds=1)
+
+    objectPathFunctions = {
+        'A': aPosition,
+        'B': bPosition,
+        'C': cPosition
+    }
 
     temperature = 20;
     pressure = 101000;
     relativeHumidity = 50;
 
-    sensor = (0.4, 0.4)
     soundSpeed = sound_speed(temperature, pressure, relativeHumidity)
-    print(soundSpeed)
     startTime = datetime.datetime.now();
 
-    controllerObjectID = "A"
-
-    objects = ["A", "B", "C"]
-    for currentObject in itertools.cycle(objects):
-        controllerMessage = (
-            currentObject,
-            datetime.datetime.now() - startTime,
-            random.randint(min_dist_time, max_dist_time),
-            random.randint(min_dist_time, max_dist_time),
-            random.randint(min_dist_time, max_dist_time)
-        )
-
-        objectID = controllerMessage[0]
-        deltaTime = controllerMessage[1]
-        deltaTimes = (
-            controllerMessage[2],
-            controllerMessage[3],
-            controllerMessage[4]
-        )
-
-#       print("deltaTimes", deltaTimes)
-#       print("deltaDistances", distance(deltaTimes, soundSpeed))
-        (x, y, z) = coordinate(sensor, distance(deltaTimes, soundSpeed))
-#       print("position", (x, y, z))
-        chat.emit("broadcast", {
-            'object': objectID,
-            'timestamp': str(startTime + deltaTime),
-            'x': x,
-            'y': y,
-            'z': z
-        })
-        socketIO.wait(seconds=1)
-
+    for i in itertools.cycle(range(360)):
+        for objectID, objectPathFunction in objectPathFunctions.items():
+            position = objectPathFunction(i, soundSpeed)
+            message = (
+                objectID,
+                datetime.datetime.now() - startTime,
+                position[0],
+                position[1],
+                position[2]
+            )
+            chat.emit("broadcast", {
+                'object': message[0],
+                'timestamp': message[1],
+                'x': ,
+                'y': ,
+                'z':
+            })
+            socketIO.wait(seconds=1)
+            time.sleep(1/200)
