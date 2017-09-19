@@ -2,9 +2,13 @@
 import logging
 import math
 import datetime
+from _ast import operator
+
+import operator
 import random
 import itertools
 import time
+from functools import partial
 
 from socketIO_client import SocketIO, LoggingNamespace
 
@@ -44,12 +48,10 @@ def sound_speed (temp, p ,rh):
 
     return (c / 10e6); # (m/µs)
 
-def distance (t, c):
-
-    # t --> tuple with the time from the sensors (s)
-
-    d = (c * t[0], c * t[1], c * t[2])
-    return d;
+# def distance (t, c):
+#    # t --> tuple with the time from the sensors (s)
+#    d = (c * t[0], c * t[1], c * t[2])
+#    return d;
 
 def coordinate (l, d):
     # l --> tuple with the distances between the sensors
@@ -68,59 +70,72 @@ def coordinate (l, d):
 
 # ================================================================
 
-def aDistances (t):
+def aPosition(alpha):
     speed = 1
-    angle = t * speed
+    angle = alpha * speed
     x = 0 + 0.3 * math.sin(angle / 180 * math.pi)
     y = 1.3 - 0.3 * math.cos(angle / 180 * math.pi)
     z = 0
-    dist0 = math.sqrt(math.pow((0 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
-    dist1 = math.sqrt(math.pow((0.4 - x), 2) +math.pow((0 - y), 2) + math.pow((0 - z), 2) )
-    dist2 = math.sqrt(math.pow((0 - x), 2)  + math.pow((0.4 - y), 2) + math.pow((0 - z), 2) )
-    return (dist0, dist1, dist2);
 
-def bDistances (t):
+    return (x, y, z)
+
+def bPosition(alpha):
     speed = 1
-    angle = t * speed
+    angle = alpha * speed
     x = 0 + 0.3 * math.cos(angle / 180 * math.pi)
     y = 1.3
     z = 0 + 0.3 * math.sin(angle / 180 * math.pi)
-    dist0 = math.sqrt(math.pow((0 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
-    dist1 = math.sqrt(math.pow((0.4 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
-    dist2 = math.sqrt(math.pow((0 - x), 2) + math.pow((0.4 - y), 2) + math.pow((0 - z), 2))
-    return (dist0, dist1, dist2);
 
-def cDistances (t):
+    return (x, y, z)
+
+def cPosition(alpha):
     speed = 1
-    angle = t * speed
+    angle = alpha * speed
     x = 0
     y = 1.3 - 0.3 * math.cos(angle / 180 * math.pi)
-    z = 0 + 0.3 * math.sin(angle / 180 * math.pi)
-    dist0 = math.sqrt(math.pow((0 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
-    dist1 = math.sqrt(math.pow((0.4 - x), 2) + math.pow((0 - y), 2) + math.pow((0 - z), 2))
-    dist2 = math.sqrt(math.pow((0 - x), 2) + math.pow((0.4 - y), 2) + math.pow((0 - z), 2))
-    return (dist0, dist1, dist2);
+    z =   0 + 0.3 * math.sin(angle / 180 * math.pi)
 
+    return (x, y, z)
 
-def aPosition (t, soundSpeed):
-    d = aDistances(t)
-    return (d[0]/soundSpeed, d[1]/soundSpeed, d[2]/soundSpeed);
+def distance3D(p0, p1):
+    dx: p0[0] - p1[0]
+    dy: p0[1] - p1[1]
+    dz: p0[2] - p1[2]
 
-def bPosition (t, soundSpeed):
-    d = bDistances(t)
-    return (d[0] / soundSpeed, d[1] / soundSpeed, d[2] / soundSpeed);
+    return math.sqrt(math.pow(dx, 2) + math.pow(dy, 2) + math.pow(dz, 2))
 
-def cPosition (t, soundSpeed):
-    d = cDistances(t)
-    return (d[0] / soundSpeed, d[1] / soundSpeed, d[2] / soundSpeed);
+def computeControllerMessage(objectID, position, sensor, tick, soundSpeed):
+    distances = tuple.map(partial(distance3D, position), sensor)
+    responseTimes = tuple(map(partial(operator.mul, 1 / soundSpeed), distances))
+
+    return (
+        objectID,
+        tick,
+        responseTimes[0],
+        responseTimes[1],
+        responseTimes[2]
+    )
+
+def computePosition(controllerMessage, sensor, startTime, soundSpeed):
+    deltaTimes = (controllerMessage[2], controllerMessage[3], controllerMessage[4])
+    distances = tuple(map(partial(operator.mul, soundSpeed), deltaTimes))
+    position = coordinate(sensor, distances)
+
+    return {
+        'object': controllerMessage[0],
+        'timestamp': str(startTime + controllerMessage[1]),
+        'x': position[0],
+        'y': position[1],
+        'z': position[2]
+    }
 
 if __name__ == '__main__':
     logging.getLogger('socketIO-client').setLevel(logging.WARN)
     logging.basicConfig()
-    #
+
     socketIO = SocketIO('localhost', 8085)
     chat = socketIO.define(LoggingNamespace, '/dataLogger')
-    #
+
     # min_dist_time = 15000  # expressed in µs
     # max_dist_time = 25000  # expressed in µs
     #
@@ -171,25 +186,31 @@ if __name__ == '__main__':
     pressure = 101000;
     relativeHumidity = 50;
 
+    sensor = ((0.0, 0.0, 0.0), (0.4, 0.0, 0.0), (0.0, 0.4, 0.0))
     soundSpeed = sound_speed(temperature, pressure, relativeHumidity)
     startTime = datetime.datetime.now();
 
-    for i in itertools.cycle(range(360)):
+    for alpha in itertools.cycle(range(360)):
         for objectID, objectPathFunction in objectPathFunctions.items():
-            position = objectPathFunction(i, soundSpeed)
-            message = (
-                objectID,
-                datetime.datetime.now() - startTime,
-                position[0],
-                position[1],
-                position[2]
-            )
-            chat.emit("broadcast", {
-                'object': message[0],
-                'timestamp': message[1],
-                'x': ,
-                'y': ,
-                'z':
-            })
-            socketIO.wait(seconds=1)
-            time.sleep(1/200)
+            #================================================
+            #   Controller scope
+            #
+            tick = (datetime.datetime.now() - startTime).microseconds
+            controllerMessage = computeControllerMessage(objectID, objectPathFunction(alpha), sensor, tick, soundSpeed)
+
+            #================================================
+            #   DataLogger scope
+            #
+
+            dataLoggerMessage = computePosition(controllerMessage, sensor, startTime, soundSpeed)
+
+            # chat.emit("broadcast", {
+            #     'object': message[0],
+            #     'timestamp': str(message[1]),
+            #     'x': message[2],
+            #     'y': message[3],
+            #     'z': message[4]
+            # })
+            chat.emit("broadcast", dataLoggerMessage)
+            socketIO.wait(seconds=1/200)
+#           time.sleep(1/200)

@@ -70,7 +70,8 @@ let accellerationsRx = velocitiesRx.map(p => p.bufferCount(2, 1).map(function ([
     }
 }));
 
-eventsRx.subscribe(function(x) { console.log("broadcast", x); });
-positionsRx.map(p => p.subscribe(x => console.log("position " + x['object'], x)));
-velocitiesRx.map(v => v.subscribe(x => console.log("velocity " + x['object'], x['speed'])));
-accellerationsRx.map(a => a.subscribe(x => console.log("accelleration " + x['object'], x['accelleration'])));
+rawEventsRx.subscribe(function(x) { console.log("raw events", x); });
+//eventsRx.subscribe(function(x) { console.log("broadcast", x); });
+//positionsRx.map(p => p.subscribe(x => console.log("position " + x['object'], x)));
+//velocitiesRx.map(v => v.subscribe(x => console.log("velocity " + x['object'], x['speed'])));
+//accellerationsRx.map(a => a.subscribe(x => console.log("accelleration " + x['object'], x['accelleration'])));
