@@ -126,29 +126,32 @@ if __name__ == '__main__':
     relativeHumidity = 50;
     soundSpeed = sound_speed(temperature, pressure, relativeHumidity)
 
-    sensorPositions = ((0.0, 0.0, 0.0), (0.4, 0.0, 0.0), (0.0, 0.4, 0.0))
+#   sensorPositions = ((0.0, 0.0, 0.0), (0.4, 0.0, 0.0), (0.0, 0.4, 0.0))
+#   sensorPositions = ((0.0, 0.0, 0.1), (0.4, 0.0, 0.1), (0.0, 0.4, 0.1))
+    sensorPositions = ((0.1, 0.1, 0.1), (0.4, -0.1, 0.1), (-0.1, 0.5, -0.1))
     startTime = datetime.datetime.now();
     tracker = Tracker(sensorPositions, soundSpeed, startTime)
 
     for alpha in itertools.cycle(range(360)):
         for objectID, objectPathFunction in objectPathFunctions.items():
-            print("--- ", objectID, " --------------------------")
-            position = objectPathFunction(alpha)
-            print("position", position)
+#           print("--- ", objectID, " --------------------------")
 
             #================================================
             #   Controller scope
             #
             tick = (datetime.datetime.now() - startTime).microseconds
+            position = objectPathFunction(alpha)
             controllerMessage = computeControllerMessage(objectID, position, sensorPositions, tick, soundSpeed)
+#           print("position", position)
 #           print("controller message", controllerMessage)
+
             #================================================
             #   DataLogger scope
             #
             dataLoggerMessage = tracker.dataLoggerMessage(controllerMessage)
             trackedPosition = (dataLoggerMessage['x'], dataLoggerMessage['y'], dataLoggerMessage['z'])
-            print("traked position", trackedPosition)
-            print("delta", tuple(round(abs(x-y), 10) for x,y in zip(position, trackedPosition)))
-            
+#           print("traked position", trackedPosition)
+#           print("delta", tuple(round(abs(x-y), 10) for x,y in zip(position, trackedPosition)))
+
             chat.emit("broadcast", dataLoggerMessage)
             socketIO.wait(seconds=1/200)

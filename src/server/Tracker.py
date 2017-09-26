@@ -12,15 +12,15 @@ def createTrackerContext(sensorPositions):
     P2 = numpy.asarray(sensorPositions[1])
     P3 = numpy.asarray(sensorPositions[2])
 
+    d = MathUtility.vectorMagnitude(P2 - P1)
+
     ex = MathUtility.normalizeVector(P2 - P1)
     i = numpy.dot(ex, (P3 - P1))
 
     ey = MathUtility.normalizeVector(P3 - P1 - i * ex)
-    ez = ex * ey
-#   ez = numpy.asanyarray((0.0, 0.0, 1.0))
-
-    d = MathUtility.vectorMagnitude(P2 - P1)
     j = numpy.dot(ey, P3 - P1)
+
+    ez = numpy.cross(ex, ey)
 
     context = {
         'P1': P1,
@@ -35,7 +35,7 @@ def createTrackerContext(sensorPositions):
         'i':  i,
         'j':  j
     }
-    print("tracker context", pprint.pprint(context, indent=4))
+#   print("tracker context", pprint.pprint(context, indent=4))
 
     return context
 

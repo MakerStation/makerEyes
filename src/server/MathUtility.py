@@ -10,10 +10,10 @@ def distance(p0, p1):
 
 
 def normalizeVector(vector):
-    return vector / numpy.sqrt(numpy.dot(vector, vector))
+    return vector / vectorMagnitude(vector)
 
 def vectorMagnitude(vector):
-    return numpy.sqrt(numpy.dot(vector, vector))
+    return numpy.linalg.norm(vector)
 
 
 def normalizedTrilateration(d, i, j, radii):
